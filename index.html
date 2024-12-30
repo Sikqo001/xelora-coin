@@ -89,12 +89,126 @@
             border: 1px solid var(--border-color);
         }
 
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .username {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .balance {
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .game-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .stat {
+            background: rgba(147, 51, 234, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .game-area {
+            position: relative;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: none;
+        }
+
+        .game-start {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .game-start h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .game-start p {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .game-start p.subtitle {
+            font-size: 0.875rem;
+            opacity: 0.7;
+            margin-bottom: 2rem;
+        }
+
+        .xelora-coin {
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent), #7c3aed);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+        }
+
+        .xelora-coin:hover {
+            transform: scale(1.1);
+        }
+
         .mining-card {
             text-align: center;
             padding: 2rem;
         }
 
-        .diamond-icon {
+        .mining-icon {
             width: 64px;
             height: 64px;
             margin: 0 auto 2rem;
@@ -150,21 +264,20 @@
             opacity: 0.9;
         }
 
-        .wallet-balance {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 1rem;
-        }
-
-        .balance-item {
+        .session-time {
             color: var(--text-secondary);
+            margin-top: 1rem;
+            font-family: monospace;
         }
 
-        .balance-value {
-            color: var(--text);
+        .wallet-section h2 {
             font-size: 1.5rem;
-            font-weight: 600;
-            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .wallet-section p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
         }
 
         .token-list {
@@ -197,12 +310,6 @@
         .tab-content.active {
             display: block;
         }
-
-        .session-time {
-            color: var(--text-secondary);
-            margin-top: 1rem;
-            font-family: monospace;
-        }
     </style>
 </head>
 <body>
@@ -216,6 +323,12 @@
                 XELORA
             </div>
             <div class="nav">
+                <div class="nav-item" data-tab="home">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    </svg>
+                    Home
+                </div>
                 <div class="nav-item active" data-tab="mining">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"></path>
@@ -229,21 +342,47 @@
                     </svg>
                     Wallet
                 </div>
-                <div class="nav-item" data-tab="home">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                    </svg>
-                    Home
-                </div>
             </div>
         </div>
     </header>
 
     <main class="container">
+        <!-- Home Tab -->
+        <div id="homeTab" class="tab-content">
+            <div class="card profile-card">
+                <div id="userAvatar" class="avatar">X</div>
+                <div class="user-info">
+                    <div id="userName" class="username">@username</div>
+                    <div class="balance">
+                        <span id="userHomeBalance">0.0000</span> XEL
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="game-header">
+                    <div class="game-title">Xelora Collector</div>
+                    <div class="game-stats">
+                        <div class="stat" id="timeLeft">Time: 30s</div>
+                        <div class="stat" id="score">Score: 0</div>
+                    </div>
+                </div>
+
+                <div id="gameStart" class="game-start">
+                    <h2>Collect Xelora Coins!</h2>
+                    <p>Click on the Xelora coins as fast as you can</p>
+                    <p class="subtitle">You have 30 seconds - how many can you catch?</p>
+                    <button id="startButton" class="button">Start Game</button>
+                </div>
+
+                <div id="gameArea" class="game-area"></div>
+            </div>
+        </div>
+
         <!-- Mining Tab -->
         <div id="miningTab" class="tab-content active">
             <div class="card mining-card">
-                <svg class="diamond-icon" viewBox="0 0 24 24" fill="none" stroke="#9333EA" stroke-width="2">
+                <svg class="mining-icon" viewBox="0 0 24 24" fill="none" stroke="#9333EA" stroke-width="2">
                     <path d="M2.5 8.5L12 2L21.5 8.5L12 22L2.5 8.5Z"/>
                 </svg>
                 
@@ -273,15 +412,13 @@
 
         <!-- Wallet Tab -->
         <div id="walletTab" class="tab-content">
-            <div class="card">
+            <div class="card wallet-section">
                 <h2>Connect Wallet</h2>
-                <p style="color: var(--text-secondary); margin: 1rem 0;">
-                    Connect your wallet to convert your mined XEL tokens into real cryptocurrency.
-                </p>
+                <p>Connect your wallet to convert your mined XEL tokens into real cryptocurrency.</p>
                 <button id="connectWallet" class="button">Connect Wallet</button>
             </div>
 
-            <div class="card">
+            <div class="card wallet-section">
                 <h2>Your Balance</h2>
                 <div class="wallet-balance">
                     <div class="balance-item">
@@ -295,7 +432,7 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card wallet-section">
                 <h2>Available Tokens</h2>
                 <div class="token-list">
                     <div class="token-item">
@@ -311,53 +448,6 @@
                         <span class="token-price">25 XEL</span>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div id="homeTab" class="tab-content">
-            <div class="card">
-                <div class="flex items-center gap-4">
-                    <div id="userAvatar" class="w-16 h-16 rounded-full bg-violet-500 flex items-center justify-center text-white text-xl font-bold">
-                        X
-                    </div>
-                    <div>
-                        <div id="userName" class="text-lg font-semibold"></div>
-                        <div class="text-violet-400">
-                            <span id="userBalance" class="font-mono">0.0000</span> XEL
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold">Xelora Collector</h3>
-                    <div class="flex items-center gap-4">
-                        <div class="bg-violet-500/10 px-3 py-1 rounded-full">
-                            <span id="timeLeft" class="text-violet-400">Time: 30s</span>
-                        </div>
-                        <div class="bg-violet-500/10 px-3 py-1 rounded-full">
-                            <span id="score" class="text-violet-400">Score: 0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="gameStart" class="text-center py-12">
-                    <div class="mb-6 space-y-2">
-                        <h4 class="text-xl font-semibold">Collect Xelora Coins!</h4>
-                        <p class="text-violet-400">
-                            Click on the Xelora coins as fast as you can
-                        </p>
-                        <p class="text-sm text-violet-400/60">
-                            You have 30 seconds - how many can you catch?
-                        </p>
-                    </div>
-                    <button id="startButton" class="button">
-                        Start Game
-                    </button>
-                </div>
-
-                <div id="gameArea" class="game-area hidden"></div>
             </div>
         </div>
     </main>
@@ -379,20 +469,32 @@
         let userBalance = parseFloat(localStorage.getItem(`${userId}_balance`) || '0');
         updateBalanceDisplay();
 
+        // Set user data
+        document.getElementById('userName').textContent = '@' + username;
+        if (tg.initDataUnsafe?.user?.photo_url) {
+            document.getElementById('userAvatar').innerHTML = `
+                <img src="${tg.initDataUnsafe.user.photo_url}" alt="Profile">
+            `;
+        }
+
         // Mining variables
         let isMining = false;
         let miningInterval;
         let sessionStart = null;
         let sessionInterval;
 
+        // Game variables
+        let isPlaying = false;
+        let timeLeft = 30;
+        let score = 0;
+        let gameInterval;
+
         // Navigation
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
-                // Remove active class from all tabs
                 document.querySelectorAll('.nav-item').forEach(tab => tab.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
                 
-                // Add active class to clicked tab
                 item.classList.add('active');
                 document.getElementById(`${item.dataset.tab}Tab`).classList.add('active');
             });
@@ -415,7 +517,6 @@
                 document.getElementById('miningProgress').style.width = `${newProgress}%`;
                 
                 if (newProgress === 100) {
-                    // Add mining reward
                     userBalance += 0.0001;
                     localStorage.setItem(`${userId}_balance`, userBalance.toString());
                     updateBalanceDisplay();
@@ -449,11 +550,74 @@
             document.getElementById('sessionTime').textContent = `${hours}:${minutes}:${seconds}`;
         }
 
+        // Game functions
+        function createCoin() {
+            const coin = document.createElement('div');
+            coin.className = 'xelora-coin';
+            coin.textContent = 'X';
+            
+            const gameArea = document.getElementById('gameArea');
+            const maxX = gameArea.clientWidth - 48;
+            const maxY = gameArea.clientHeight - 48;
+            
+            coin.style.left = `${Math.random() * maxX}px`;
+            coin.style.top = `${Math.random() * maxY}px`;
+            
+            coin.onclick = () => {
+                score++;
+                document.getElementById('score').textContent = `Score: ${score}`;
+                gameArea.removeChild(coin);
+                createCoin();
+            };
+            
+            gameArea.appendChild(coin);
+        }
+
+        function startGame() {
+            isPlaying = true;
+            score = 0;
+            timeLeft = 30;
+            document.getElementById('gameStart').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'block';
+            document.getElementById('score').textContent = `Score: ${score}`;
+            
+            createCoin();
+            
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timeLeft').textContent = `Time: ${timeLeft}s`;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            isPlaying = false;
+            clearInterval(gameInterval);
+            document.getElementById('gameArea').innerHTML = '';
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('gameStart').style.display = 'block';
+            
+            const reward = score * 0.0001;
+            userBalance += reward;
+            localStorage.setItem(`${userId}_balance`, userBalance.toString());
+            updateBalanceDisplay();
+            
+            tg.sendData(JSON.stringify({
+                type: 'game_complete',
+                score: score,
+                reward: reward
+            }));
+        }
+
         function updateBalanceDisplay() {
             const xelBalance = userBalance.toFixed(4);
             const usdBalance = (userBalance * XEL_TO_USD_RATE).toFixed(2);
             
             document.getElementById('xelBalance').textContent = xelBalance;
+            document.getElementById('userHomeBalance').textContent = xelBalance;
             document.getElementById('usdBalance').textContent = `$${usdBalance}`;
         }
 
@@ -466,101 +630,15 @@
             }
         });
 
+        document.getElementById('startButton').addEventListener('click', startGame);
+
         document.getElementById('connectWallet').addEventListener('click', () => {
             window.open(WALLET_URL, '_blank');
         });
 
-        document.getElementById('userName').textContent = username;
-        if (tg.initDataUnsafe?.user?.photo_url) {
-            document.getElementById('userAvatar').innerHTML = `
-                <img src="${tg.initDataUnsafe.user.photo_url}" class="w-full h-full rounded-full object-cover">
-            `;
-        }
-
-        // Game Logic
-        let isPlaying = false;
-        let timeLeft = 30;
-        let score = 0;
-        let gameInterval;
-
-        const gameStart = document.getElementById('gameStart');
-        const gameArea = document.getElementById('gameArea');
-        const startButton = document.getElementById('startButton');
-        const timeLeftDisplay = document.getElementById('timeLeft');
-        const scoreDisplay = document.getElementById('score');
-
-        function createCoin() {
-            const coin = document.createElement('div');
-            coin.className = 'xelora-coin absolute';
-            coin.textContent = 'X';
-            
-            const maxX = gameArea.clientWidth - 64;
-            const maxY = gameArea.clientHeight - 64;
-            const x = Math.random() * maxX;
-            const y = Math.random() * maxY;
-            
-            coin.style.left = `${x}px`;
-            coin.style.top = `${y}px`;
-            
-            coin.onclick = () => {
-                score++;
-                scoreDisplay.textContent = `Score: ${score}`;
-                gameArea.removeChild(coin);
-                createCoin();
-            };
-            
-            gameArea.appendChild(coin);
-        }
-
-        function startGame() {
-            isPlaying = true;
-            score = 0;
-            timeLeft = 30;
-            gameStart.classList.add('hidden');
-            gameArea.classList.remove('hidden');
-            scoreDisplay.textContent = `Score: ${score}`;
-            
-            createCoin();
-            
-            gameInterval = setInterval(() => {
-                timeLeft--;
-                timeLeftDisplay.textContent = `Time: ${timeLeft}s`;
-                
-                if (timeLeft <= 0) {
-                    endGame();
-                }
-            }, 1000);
-        }
-
-        function endGame() {
-            isPlaying = false;
-            clearInterval(gameInterval);
-            gameArea.innerHTML = '';
-            gameArea.classList.add('hidden');
-            gameStart.classList.remove('hidden');
-            
-            // Update user's balance
-            userBalance += (score * 0.0001);
-            localStorage.setItem(`${userId}_balance`, userBalance.toString());
-            updateBalanceDisplay();
-            
-            // Send score to Telegram
-            tg.sendData(JSON.stringify({
-                type: 'game_complete',
-                score: score,
-                reward: score * 0.0001
-            }));
-        }
-
-        startButton.onclick = startGame;
-
-
-        // Initialize with mining tab
-        document.getElementById('miningTab').classList.add('active');
-
         // Handle Telegram theme changes
         tg.onEvent('themeChanged', function() {
-            //Update Theme Here if needed.
+            // Update theme colors if needed
         });
     </script>
 </body>
