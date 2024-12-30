@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xelora Coin</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --tg-theme-bg-color: #1a1a1a;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: #a78bfa;
+            --tg-theme-link-color: #7c3aed;
+            --tg-theme-button-color: #7c3aed;
+            --tg-theme-button-text-color: #ffffff;
+        }
+
+        body {
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        .tab-button {
+            background: transparent;
+            border: none;
+            color: var(--tg-theme-hint-color);
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-button.active {
+            color: var(--tg-theme-text-color);
+            border-bottom: 2px solid var(--tg-theme-button-color);
+        }
+
+        .xelora-coin {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.8), rgba(192, 38, 211, 0.8));
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .xelora-coin:hover {
+            transform: scale(1.1);
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .game-area {
+            position: relative;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+        }
+
+        .button {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .button:hover {
+            opacity: 0.9;
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spin {
+            animation: spin 2s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation -->
+        <div class="border-b border-violet-500/20 bg-black/20 mb-4">
+            <div class="max-w-md mx-auto px-4">
+                <div class="flex justify-between">
+                    <button class="tab-button active" data-tab="home">Home</button>
+                    <button class="tab-button" data-tab="mining">Mining</button>
+                    <button class="tab-button" data-tab="wallet">Wallet</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Container -->
+        <div class="max-w-md mx-auto px-4">
+            <!-- Home Tab -->
+            <div id="homeTab" class="tab-content">
+                <!-- User Profile -->
+                <div class="card">
+                    <div class="flex items-center gap-4">
+                        <div id="userAvatar" class="w-16 h-16 rounded-full bg-violet-500 flex items-center justify-center text-white text-xl font-bold">
+                            X
+                        </div>
+                        <div>
+                            <div id="userName" class="text-lg font-semibold"></div>
+                            <div class="text-violet-400">
+                                <span id="userBalance" class="font-mono">0.0000</span> XEL
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game -->
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Xelora Collector</h3>
+                        <div class="flex items-center gap-4">
+                            <div class="bg-violet-500/10 px-3 py-1 rounded-full">
+                                <span id="timeLeft" class="text-violet-400">Time: 30s</span>
+                            </div>
+                            <div class="bg-violet-500/10 px-3 py-1 rounded-full">
+                                <span id="score" class="text-violet-400">Score: 0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="gameStart" class="text-center py-12">
+                        <div class="mb-6 space-y-2">
+                            <h4 class="text-xl font-semibold">Collect Xelora Coins!</h4>
+                            <p class="text-violet-400">
+                                Click on the Xelora coins as fast as you can
+                            </p>
+                            <p class="text-sm text-violet-400/60">
+                                You have 30 seconds - how many can you catch?
+                            </p>
+                        </div>
+                        <button id="startButton" class="button">
+                            Start Game
+                        </button>
+                    </div>
+
+                    <div id="gameArea" class="game-area hidden"></div>
+                </div>
+            </div>
+
+            <!-- Mining Tab -->
+            <div id="miningTab" class="tab-content hidden">
+                <div class="card">
+                    <div class="text-center py-8">
+                        <div id="miningAnimation" class="xelora-coin mx-auto mb-6">X</div>
+                        <div class="space-y-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-violet-400">Hash Rate:</span>
+                                <span id="hashRate" class="font-mono">0.00 H/s</span>
+                            </div>
+                            <div class="h-2 bg-black/40 rounded overflow-hidden">
+                                <div id="miningProgress" class="h-full bg-violet-500 transition-all duration-200" style="width: 0%"></div>
+                            </div>
+                            <div id="miningStatus" class="text-sm text-gray-400">Mining Stopped</div>
+                            <button id="miningButton" class="button w-full">
+                                Start Mining
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wallet Tab -->
+            <div id="walletTab" class="tab-content hidden">
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-4">Connect Wallet</h3>
+                    <p class="text-violet-400 mb-4">
+                        Connect your wallet to convert your mined XEL tokens into real cryptocurrency.
+                    </p>
+                    <button id="connectWalletButton" class="button w-full">
+                        Connect Wallet
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-4">Available Tokens</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-2 bg-black/20 rounded">
+                            <span>ETH</span>
+                            <span class="text-violet-400">100 XEL</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-black/20 rounded">
+                            <span>BNB</span>
+                            <span class="text-violet-400">50 XEL</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-black/20 rounded">
+                            <span>MATIC</span>
+                            <span class="text-violet-400">25 XEL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // User data management
+        const USER_DATA_KEY = 'xelora_user_data';
+        let userData = {
+            balance: 0,
+            totalMined: 0,
+            lastUpdated: new Date().toISOString()
+        };
+
+        // Load saved user data
+        function loadUserData() {
+            const savedData = localStorage.getItem(USER_DATA_KEY + '_' + tg.initDataUnsafe?.user?.id);
+            if (savedData) {
+                userData = JSON.parse(savedData);
+                document.getElementById('userBalance').textContent = userData.balance.toFixed(4);
+            }
+        }
+
+        // Save user data
+        function saveUserData() {
+            localStorage.setItem(USER_DATA_KEY + '_' + tg.initDataUnsafe?.user?.id, JSON.stringify(userData));
+        }
+
+        // Initialize user profile
+        function initializeUserProfile() {
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                document.getElementById('userName').textContent = user.username ? '@' + user.username : user.first_name;
+                
+                if (user.photo_url) {
+                    document.getElementById('userAvatar').innerHTML = `
+                        <img src="${user.photo_url}" class="w-full h-full rounded-full object-cover">
+                    `;
+                } else {
+                    const initial = (user.username || user.first_name || 'X')[0].toUpperCase();
+                    document.getElementById('userAvatar').textContent = initial;
+                }
+
+                loadUserData();
+            }
+        }
+
+        // Initialize app
+        initializeUserProfile();
+
+        // Tab Navigation
+        const tabs = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show active content
+                tabContents.forEach(content => {
+                    content.classList.add('hidden');
+                    if (content.id === `${tabName}Tab`) {
+                        content.classList.remove('hidden');
+                    }
+                });
+            });
+        });
+
+        // Game Logic
+        let isPlaying = false;
+        let timeLeft = 30;
+        let score = 0;
+        let gameInterval;
+
+        const gameStart = document.getElementById('gameStart');
+        const gameArea = document.getElementById('gameArea');
+        const startButton = document.getElementById('startButton');
+        const timeLeftDisplay = document.getElementById('timeLeft');
+        const scoreDisplay = document.getElementById('score');
+
+        function createCoin() {
+            const coin = document.createElement('div');
+            coin.className = 'xelora-coin absolute';
+            coin.textContent = 'X';
+            
+            const maxX = gameArea.clientWidth - 64;
+            const maxY = gameArea.clientHeight - 64;
+            const x = Math.random() * maxX;
+            const y = Math.random() * maxY;
+            
+            coin.style.left = `${x}px`;
+            coin.style.top = `${y}px`;
+            
+            coin.onclick = () => {
+                score++;
+                scoreDisplay.textContent = `Score: ${score}`;
+                gameArea.removeChild(coin);
+                createCoin();
+            };
+            
+            gameArea.appendChild(coin);
+        }
+
+        function startGame() {
+            isPlaying = true;
+            score = 0;
+            timeLeft = 30;
+            gameStart.classList.add('hidden');
+            gameArea.classList.remove('hidden');
+            scoreDisplay.textContent = `Score: ${score}`;
+            
+            createCoin();
+            
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timeLeftDisplay.textContent = `Time: ${timeLeft}s`;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            isPlaying = false;
+            clearInterval(gameInterval);
+            gameArea.innerHTML = '';
+            gameArea.classList.add('hidden');
+            gameStart.classList.remove('hidden');
+            
+            // Update user's balance and save
+            userData.balance += (score * 0.0001);
+            document.getElementById('userBalance').textContent = userData.balance.toFixed(4);
+            saveUserData();
+            
+            // Send score to Telegram
+            tg.sendData(JSON.stringify({
+                type: 'game_complete',
+                score: score,
+                reward: score * 0.0001,
+                total_balance: userData.balance
+            }));
+        }
+
+        startButton.onclick = startGame;
+
+        // Mining Logic
+        let isMining = false;
+        let miningInterval;
+        const miningButton = document.getElementById('miningButton');
+        const miningProgress = document.getElementById('miningProgress');
+        const miningStatus = document.getElementById('miningStatus');
+        const hashRate = document.getElementById('hashRate');
+        const miningAnimation = document.getElementById('miningAnimation');
+
+        function updateMining() {
+            if (isMining) {
+                let progress = parseInt(miningProgress.style.width) || 0;
+                progress = (progress + 1) % 101;
+                miningProgress.style.width = `${progress}%`;
+                
+                if (progress === 100) {
+                    userData.balance += 0.0001;
+                    userData.totalMined += 0.0001;
+                    document.getElementById('userBalance').textContent = userData.balance.toFixed(4);
+                    saveUserData();
+                }
+                
+                hashRate.textContent = `${(15 + Math.random() * 10).toFixed(2)} H/s`;
+            }
+        }
+
+        miningButton.onclick = () => {
+            isMining = !isMining;
+            miningButton.textContent = isMining ? 'Stop Mining' : 'Start Mining';
+            miningStatus.textContent = isMining ? 'Mining Active' : 'Mining Stopped';
+            miningStatus.className = `text-sm ${isMining ? 'text-green-400' : 'text-gray-400'}`;
+            
+            if (isMining) {
+                miningAnimation.classList.add('spin');
+                miningInterval = setInterval(updateMining, 100);
+            } else {
+                miningAnimation.classList.remove('spin');
+                clearInterval(miningInterval);
+                miningProgress.style.width = '0%';
+                hashRate.textContent = '0.00 H/s';
+            }
+        };
+
+        // Wallet Logic
+        const WALLET_URL = "https://your-website-url.com"; // Zmeň na svoju URL
+        const connectWalletButton = document.getElementById('connectWalletButton');
+        
+        connectWalletButton.onclick = () => {
+            // Otvor externú webstránku
+            window.open(WALLET_URL, '_blank');
+            
+            // Notifikuj Telegram
+            tg.sendData(JSON.stringify({
+                type: 'connect_wallet_request',
+                user_balance: userData.balance
+            }));
+        };
+
+        // Handle Telegram theme changes
+        tg.onEvent('themeChanged', function() {
+            document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
+            document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color);
+            document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color);
+            document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color);
+        });
+
+        // Handle visibility changes to save data
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                saveUserData();
+            }
+        });
+
+        // Save data before closing
+        window.addEventListener('beforeunload', () => {
+            saveUserData();
+        });
+    </script>
+</body>
+</html>
