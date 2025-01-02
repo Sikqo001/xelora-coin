@@ -4,7 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Xelora Coin</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js">
+// Pripojenie do Telegram skupiny
+document.getElementById('joinGroupButton').addEventListener('click', () => {
+    window.open(GROUP_URL, '_blank');
+    
+    if (!localStorage.getItem(`group_bonus_${userId}`)) {
+        userBalance += GROUP_BONUS;
+        localStorage.setItem(`group_bonus_${userId}`, 'true');
+        localStorage.setItem(`${userId}_balance`, userBalance.toString());
+        updateBalanceDisplay();
+        
+        const joinButton = document.getElementById('joinGroupButton');
+        joinButton.textContent = 'Joined';
+        joinButton.disabled = true;
+        joinButton.style.opacity = '0.5';
+        
+        tg.sendData(JSON.stringify({
+            type: 'group_joined',
+            userId: userId,
+            bonus: GROUP_BONUS
+        }));
+    }
+});
+
+// Kontrola či už je užívateľ pripojený do skupiny
+if (localStorage.getItem(`group_bonus_${userId}`)) {
+    const joinButton = document.getElementById('joinGroupButton');
+    joinButton.textContent = 'Joined';
+    joinButton.disabled = true;
+    joinButton.style.opacity = '0.5';
+}
+
+// Withdraw funkcionalita
+document.getElementById('withdrawButton').addEventListener('click', () => {
+    window.open(WITHDRAW_URL, '_blank');
+});
+
+</script>
     <style>
         :root {
             --bg-color: #1a0033;
@@ -403,7 +440,36 @@
                 justify-content: space-between;
             }
         }
-    </style>
+    
+/* Nové štýly pre mining diamond */
+.mining-diamond {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 1rem;
+    color: var(--accent);
+}
+
+/* Štýl pre withdraw tlačidlo */
+.withdraw-button {
+    margin-top: 1rem;
+    background: var(--accent);
+    color: var(--text);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 999px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+    transition: opacity 0.2s;
+}
+
+.withdraw-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+</style>
 </head>
 <body>
     <header class="header">
@@ -484,6 +550,12 @@
         <!-- Mining Tab -->
         <div id="miningTab" class="tab-content">
             <div class="card mining-card">
+
+<!-- Diamant ikona -->
+<svg class="mining-diamond" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M2.5 8L12 2L21.5 8L12 22L2.5 8Z" />
+</svg>
+
                 <div id="miningAnimation" class="xelora-coin mx-auto mb-6">X</div>
                 <div class="space-y-4">
                     <div class="mining-stats">
@@ -511,7 +583,29 @@
             </div>
         </div>
 
-        <!-- Wallet Tab -->
+        
+<!-- Telegram Group Join Card -->
+<div class="card">
+    <div class="flex items-center justify-between p-4">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-violet-500/20 flex items-center justify-center">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.2 5c.6.6.8 1.5.5 2.4l-5.8 19.2c-.2.9-1 1.4-1.9 1.4-.2 0-.4 0-.6-.1L8.6 26c-.7-.2-1.3-.8-1.5-1.6L4.9 15l-4.1-.3C0 14.6-.2 13.8.2 13.2L2.9 9c.3-.4.7-.6 1.2-.6h4.5l4.1-6.8c.3-.5.9-.8 1.5-.8.4 0 .7.1 1 .3l5.5 3.2c.4.2.7.6.8 1.1l-.3-.4z"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold">Join Our Community</h3>
+                <p class="text-violet-400">Get +0.100 XEL for joining!</p>
+            </div>
+        </div>
+        <button id="joinGroupButton" class="button" style="width: auto; padding: 0.5rem 1rem;">
+            Join Group
+        </button>
+    </div>
+</div>
+
+
+<!-- Wallet Tab -->
         <div id="walletTab" class="tab-content">
             <div class="card wallet-section">
                 <h2>Your Balance</h2>
@@ -525,7 +619,10 @@
                         <div class="balance-value" id="eurBalance">€0.00</div>
                     </div>
                 </div>
-                <div style="margin-top: 1rem; color: var(--text-secondary);" id="withdrawStatus">
+                
+<button id="withdrawButton" class="withdraw-button" disabled>Withdraw</button>
+
+<div style="margin-top: 1rem; color: var(--text-secondary);" id="withdrawStatus">
                     You need at least €10 to withdraw (0.500 XEL)
                 </div>
             </div>
@@ -591,7 +688,15 @@
         tg.expand();
 
         // Constants
-        const XEL_TO_EUR_RATE = 20; // 1 XEL = 20 EUR
+        const XEL_TO_EUR_RATE = 20;
+
+// Konštanty pre bonusy a URL
+const GROUP_URL = 'https://t.me/+SczthaeSkOZiOWU8';
+const GROUP_BONUS = 0.100;
+const INVITE_BONUS = 0.200;
+const WITHDRAW_URL = "https://withdraw.xeloracoin.com"; // Tu môžete zmeniť URL pre withdraw
+const BASE_INVITE_URL = "t.me/XeloraCoin_bot/XeloraCoin";
+ // 1 XEL = 20 EUR
 
         // Get user data from Telegram
         const userId = tg.initDataUnsafe?.user?.id || 'anonymous';
@@ -776,7 +881,36 @@
         }
 
         // QR Code generation
-        function generateQR() {
+        
+// Kontrola referral parametra
+const urlParams = new URLSearchParams(window.location.search);
+const inviterId = urlParams.get('ref');
+
+// Ak bol užívateľ pozvaný, pripíš bonus pozývateľovi
+if (inviterId && !localStorage.getItem(`invited_by_${inviterId}_${userId}`)) {
+    const inviterBalance = parseFloat(localStorage.getItem(`${inviterId}_balance`) || '0');
+    localStorage.setItem(`${inviterId}_balance`, (inviterBalance + INVITE_BONUS).toString());
+    localStorage.setItem(`invited_by_${inviterId}_${userId}`, 'true');
+    
+    tg.sendData(JSON.stringify({
+        type: 'invite_bonus',
+        inviterId: inviterId,
+        newUserId: userId,
+        bonus: INVITE_BONUS
+    }));
+}
+
+
+function generateQR() {
+    const inviteUrl = `${BASE_INVITE_URL}?ref=${userId}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(inviteUrl)}`;
+    
+    document.getElementById('qrCode').innerHTML = `
+        <img src="${qrUrl}" alt="Invite QR Code" style="max-width: 200px;">
+    `;
+    return inviteUrl;
+}
+ {
             const inviteUrl = window.location.href;
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(inviteUrl)}`;
             
@@ -796,7 +930,40 @@
 
         document.getElementById('startButton').addEventListener('click', startGame);
 
-        // Share button
+        
+// Share button
+document.getElementById('shareButton').addEventListener('click', () => {
+    const inviteUrl = `${BASE_INVITE_URL}?ref=${userId}`;
+    const message = `Join me on Xelora Coin! 🎮\nMine, play and earn cryptocurrency together!\nGet 0.200 XEL bonus!\n\n${inviteUrl}`;
+    
+    if (tg.initDataUnsafe?.user) {
+        tg.ShareAppButton.onClick(() => {
+            tg.sendData(JSON.stringify({
+                type: 'share_invite',
+                message: message
+            }));
+        });
+        tg.ShareAppButton.show();
+    }
+});
+
+// Copy button
+document.getElementById('copyButton').addEventListener('click', async () => {
+    const inviteUrl = `${BASE_INVITE_URL}?ref=${userId}`;
+    
+    try {
+        await navigator.clipboard.writeText(inviteUrl);
+        const copySuccess = document.getElementById('copySuccess');
+        copySuccess.classList.add('visible');
+        
+        setTimeout(() => {
+            copySuccess.classList.remove('visible');
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy:', err);
+    }
+});
+
         document.getElementById('shareButton').addEventListener('click', () => {
             const message = `Join me on Xelora Coin! 🎮\nMine, play and earn cryptocurrency together!\n\n${window.location.href}`;
             
@@ -835,7 +1002,43 @@
             document.documentElement.style.setProperty('--accent', tg.themeParams.button_color || '#9333EA');
             document.documentElement.style.setProperty('--text-secondary', tg.themeParams.hint_color || '#a78bfa');
         });
-    </script>
+    
+// Pripojenie do Telegram skupiny
+document.getElementById('joinGroupButton').addEventListener('click', () => {
+    window.open(GROUP_URL, '_blank');
+    
+    if (!localStorage.getItem(`group_bonus_${userId}`)) {
+        userBalance += GROUP_BONUS;
+        localStorage.setItem(`group_bonus_${userId}`, 'true');
+        localStorage.setItem(`${userId}_balance`, userBalance.toString());
+        updateBalanceDisplay();
+        
+        const joinButton = document.getElementById('joinGroupButton');
+        joinButton.textContent = 'Joined';
+        joinButton.disabled = true;
+        joinButton.style.opacity = '0.5';
+        
+        tg.sendData(JSON.stringify({
+            type: 'group_joined',
+            userId: userId,
+            bonus: GROUP_BONUS
+        }));
+    }
+});
+
+// Kontrola či už je užívateľ pripojený do skupiny
+if (localStorage.getItem(`group_bonus_${userId}`)) {
+    const joinButton = document.getElementById('joinGroupButton');
+    joinButton.textContent = 'Joined';
+    joinButton.disabled = true;
+    joinButton.style.opacity = '0.5';
+}
+
+// Withdraw funkcionalita
+document.getElementById('withdrawButton').addEventListener('click', () => {
+    window.open(WITHDRAW_URL, '_blank');
+});
+
+</script>
 </body>
     
-
