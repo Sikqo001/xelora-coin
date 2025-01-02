@@ -837,5 +837,141 @@
         });
     </script>
 </body>
+    
 </html>
+<!-- [Previous code remains unchanged until mining card closing div] -->
+
+        </div>
+        
+        <!-- Telegram Group Join Card -->
+        <div class="card">
+            <div class="flex items-center justify-between p-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-violet-500/20 flex items-center justify-center">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.2 5c.6.6.8 1.5.5 2.4l-5.8 19.2c-.2.9-1 1.4-1.9 1.4-.2 0-.4 0-.6-.1L8.6 26c-.7-.2-1.3-.8-1.5-1.6L4.9 15l-4.1-.3C0 14.6-.2 13.8.2 13.2L2.9 9c.3-.4.7-.6 1.2-.6h4.5l4.1-6.8c.3-.5.9-.8 1.5-.8.4 0 .7.1 1 .3l5.5 3.2c.4.2.7.6.8 1.1l-.3-.4z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold">Join Our Community</h3>
+                        <p class="text-violet-400">Get +0.100 XEL for joining!</p>
+                    </div>
+                </div>
+                <button id="joinGroupButton" class="button" style="width: auto; padding: 0.5rem 1rem;">
+                    Join Group
+                </button>
+            </div>
+        </div>
+
+<!-- [Previous code remains unchanged until script section] -->
+
+<script>
+// [Previous script code remains unchanged]
+
+// Add group join functionality
+const GROUP_URL = 'https://t.me/+SczthaeSkOZiOWU8';
+const GROUP_BONUS = 0.100;
+const INVITE_BONUS = 0.200;
+
+// Check for invite parameters
+const urlParams = new URLSearchParams(window.location.search);
+const inviterId = urlParams.get('ref');
+
+// If user was invited, give bonus to inviter
+if (inviterId && !localStorage.getItem(`invited_by_${inviterId}_${userId}`)) {
+    const inviterBalance = parseFloat(localStorage.getItem(`${inviterId}_balance`) || '0');
+    localStorage.setItem(`${inviterId}_balance`, (inviterBalance + INVITE_BONUS).toString());
+    localStorage.setItem(`invited_by_${inviterId}_${userId}`, 'true');
+    
+    // Send data to bot
+    tg.sendData(JSON.stringify({
+        type: 'invite_bonus',
+        inviterId: inviterId,
+        newUserId: userId,
+        bonus: INVITE_BONUS
+    }));
+}
+
+document.getElementById('joinGroupButton').addEventListener('click', () => {
+    // Open group in new window
+    window.open(GROUP_URL, '_blank');
+    
+    // Check if bonus wasn't already claimed
+    if (!localStorage.getItem(`group_bonus_${userId}`)) {
+        // Add bonus
+        userBalance += GROUP_BONUS;
+        localStorage.setItem(`group_bonus_${userId}`, 'true');
+        localStorage.setItem(`${userId}_balance`, userBalance.toString());
+        updateBalanceDisplay();
+        
+        // Update button state
+        const joinButton = document.getElementById('joinGroupButton');
+        joinButton.textContent = 'Joined';
+        joinButton.disabled = true;
+        joinButton.style.opacity = '0.5';
+        
+        // Send data to bot
+        tg.sendData(JSON.stringify({
+            type: 'group_joined',
+            userId: userId,
+            bonus: GROUP_BONUS
+        }));
+    }
+});
+
+// Check if already joined on load
+if (localStorage.getItem(`group_bonus_${userId}`)) {
+    const joinButton = document.getElementById('joinGroupButton');
+    joinButton.textContent = 'Joined';
+    joinButton.disabled = true;
+    joinButton.style.opacity = '0.5';
+}
+
+// Update QR code generation to include referral
+function generateQR() {
+    const inviteUrl = `${window.location.origin}${window.location.pathname}?ref=${userId}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(inviteUrl)}`;
+    
+    document.getElementById('qrCode').innerHTML = `
+        <img src="${qrUrl}" alt="Invite QR Code" style="max-width: 200px;">
+    `;
+}
+
+// Update share functionality to include referral
+document.getElementById('shareButton').addEventListener('click', () => {
+    const inviteUrl = `${window.location.origin}${window.location.pathname}?ref=${userId}`;
+    const message = `Join me on Xelora Coin! 🎮\nMine, play and earn cryptocurrency together!\nGet 0.200 XEL bonus!\n\n${inviteUrl}`;
+    
+    if (tg.initDataUnsafe?.user) {
+        tg.ShareAppButton.onClick(() => {
+            tg.sendData(JSON.stringify({
+                type: 'share_invite',
+                message: message
+            }));
+        });
+        tg.ShareAppButton.show();
+    }
+});
+
+// Update copy functionality to include referral
+document.getElementById('copyButton').addEventListener('click', async () => {
+    const inviteUrl = `${window.location.origin}${window.location.pathname}?ref=${userId}`;
+    
+    try {
+        await navigator.clipboard.writeText(inviteUrl);
+        const copySuccess = document.getElementById('copySuccess');
+        copySuccess.classList.add('visible');
+        
+        setTimeout(() => {
+            copySuccess.classList.remove('visible');
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy:', err);
+    }
+});
+
+// [Rest of the script code remains unchanged]
+</script>
+
+
 
